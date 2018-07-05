@@ -22,6 +22,7 @@ class WeatherViewController: UIViewController, CLLocationManagerDelegate, Change
     //TODO: Declare instance variables here
     let locationManager = CLLocationManager()
     let weatherDataModel = WeatherDataModel()
+    var isCelsius = false
     
     //Pre-linked IBOutlets
     @IBOutlet weak var weatherIcon: UIImageView!
@@ -79,7 +80,9 @@ class WeatherViewController: UIViewController, CLLocationManagerDelegate, Change
         //Doing an optional binding saves us from force unwrapping data in the json
         if let tempResult = json["main"]["temp"].double {//More convenience provided by SwiftyJSON
         
-            weatherDataModel.temperature = Int(tempResult - 273.15) //JSON data is in Kelvin
+            weatherDataModel.temperatureKelvin = Int(tempResult) //JSON data is in Kelvin
+            weatherDataModel.temperatureCelsius = Int(tempResult - 273.15)
+            weatherDataModel.temperatureFahrenheit = Int(tempResult * (9/5) - 459.67)
             weatherDataModel.city = json["name"].stringValue
             weatherDataModel.condition = json["weather"][0]["id"].intValue
             weatherDataModel.weatherIconName = weatherDataModel.updateWeatherIcon(condition: weatherDataModel.condition)
@@ -100,10 +103,24 @@ class WeatherViewController: UIViewController, CLLocationManagerDelegate, Change
     //Write the updateUIWithWeatherData method here:
     func updateUIWithWeatherData() {
         cityLabel.text = weatherDataModel.city
-        temperatureLabel.text = String(weatherDataModel.temperature) + "°"
         weatherIcon.image = UIImage(named: weatherDataModel.weatherIconName)
+        
+        if isCelsius {
+            temperatureLabel.text = String(weatherDataModel.temperatureCelsius) + "°"
+        } else {
+            temperatureLabel.text = String(weatherDataModel.temperatureFahrenheit) + "°"
+        }
     }
     
+    @IBAction func switchDegrees(_ sender: UISwitch) {
+        if sender.isOn {
+            isCelsius = true
+            updateUIWithWeatherData()
+        } else {
+            isCelsius = false
+            updateUIWithWeatherData()
+        }
+    }
     
     
     
